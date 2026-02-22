@@ -720,3 +720,41 @@ def snapshot_engine(engine: KnightsOfNearEngine) -> EngineSnapshot:
 
 def restore_engine(engine: KnightsOfNearEngine, snap: EngineSnapshot) -> None:
     engine._balances = dict(snap.balances)
+    engine._allowances = dict(snap.allowances)
+    engine._total_supply = snap.total_supply
+    for sid, d in snap.seats.items():
+        engine._seats[sid] = RoundTableSeat(
+            seat_id=d["seat_id"],
+            occupant=d["occupant"],
+            stake_amount=d["stake_amount"],
+            claimed_at_block=d["claimed_at_block"],
+            status=SeatStatus[d["status"]],
+        )
+    engine._seat_by_knight = dict(snap.seat_by_knight)
+    engine._kok_owners = dict(snap.kok_owners)
+    engine._kok_minted = dict(snap.kok_minted)
+    engine._table_unlocked = snap.table_unlocked
+    engine._unlock_block = snap.unlock_block
+    engine._transfer_fee_basis = snap.transfer_fee_basis
+    engine._fee_recipient = snap.fee_recipient
+
+
+# ---------------------------------------------------------------------------
+# Fee accounting and treasury view
+# ---------------------------------------------------------------------------
+
+
+def get_fee_recipient_balance(engine: KnightsOfNearEngine) -> int:
+    return engine.balance_of(engine._fee_recipient)
+
+
+def get_kon_holding_report(engine: KnightsOfNearEngine, addrs: List[str]) -> List[Dict[str, Any]]:
+    out = []
+    for a in addrs:
+        norm = _normalize_addr(a)
+        bal = engine.balance_of(norm)
+        seat = engine.get_seat_for_knight(norm)
+        out.append({"address": norm, "balance": bal, "seat_id": seat})
+    return out
+
+
