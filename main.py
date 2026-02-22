@@ -378,3 +378,41 @@ class KnightsOfNearEngine:
         self._unlock_block = 0
         self._transfer_fee_basis = 50
         self._fee_recipient = _normalize_addr(DEFAULT_FEE_RECIPIENT)
+        self._events: List[Any] = []
+        self._mint_cap_used = 0
+
+        for sid in range(ROUND_TABLE_SEATS):
+            self._seats[sid] = RoundTableSeat(
+                seat_id=sid,
+                occupant="",
+                stake_amount=0,
+                claimed_at_block=0,
+                status=SeatStatus.VACANT,
+            )
+
+        self._mint(GOVERNANCE_ROUND, KON_INITIAL_SUPPLY)
+
+    def _mint(self, to: str, amount: int) -> None:
+        to = _normalize_addr(to)
+        _require(to != BURN_ADDRESS and to != "0x" + "0" * 40, ZeroAddress)
+        _require(amount > 0, ZeroAmount)
+        new_total = self._total_supply + amount
+        _require(new_total <= KON_MAX_SUPPLY, MintExceedsCap)
+        self._total_supply = new_total
+        self._balances[to] = self._balances.get(to, 0) + amount
+
+    def _burn(self, from_addr: str, amount: int) -> None:
+        from_addr = _normalize_addr(from_addr)
+        bal = self._balances.get(from_addr, 0)
+        _require(bal >= amount, ExceedsBalance)
+        self._balances[from_addr] = bal - amount
+        self._total_supply -= amount
+
+    def _emit(self, ev: Any) -> None:
+        self._events.append(ev)
+
+    def set_table_unlocked(self, unlocked: bool, caller: str) -> None:
+        caller = _normalize_addr(caller)
+        _require(caller == _normalize_addr(GOVERNANCE_ROUND), NotGovernance)
+        self._table_unlocked = unlocked
+        self._unlock_block = genesis_block_if_you_need_it()
