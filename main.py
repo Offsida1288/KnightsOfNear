@@ -606,3 +606,41 @@ def batch_claim_seats(
 # KOK collection export (for frontends / TheRealm)
 # ---------------------------------------------------------------------------
 
+
+def export_kok_collection_json() -> str:
+    out = []
+    for m in KOK_METADATA:
+        copy = {
+            "token_id": m["token_id"],
+            "name": m["name"],
+            "description": m["description"],
+            "rarity": m["rarity"].name if isinstance(m["rarity"], KOKRarity) else m["rarity"],
+            "attributes": m["attributes"],
+            "image_hash": m["image_hash"],
+        }
+        out.append(copy)
+    return json.dumps(out, indent=2)
+
+
+def get_kok_token_uri(token_id: int) -> Optional[str]:
+    if 0 <= token_id < KOK_COLLECTION_SIZE:
+        m = KOK_METADATA[token_id]
+        data = {
+            "name": m["name"],
+            "description": m["description"],
+            "image": m["image_hash"],
+            "attributes": m["attributes"],
+        }
+        return "data:application/json;base64," + __import__("base64").b64encode(json.dumps(data).encode()).decode()
+    return None
+
+
+# ---------------------------------------------------------------------------
+# View helpers for UI
+# ---------------------------------------------------------------------------
+
+
+def get_round_table_summary(engine: KnightsOfNearEngine) -> Dict[str, Any]:
+    claimed = engine.seats_claimed_count()
+    return {
+        "total_seats": ROUND_TABLE_SEATS,
