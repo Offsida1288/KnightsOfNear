@@ -416,3 +416,41 @@ class KnightsOfNearEngine:
         _require(caller == _normalize_addr(GOVERNANCE_ROUND), NotGovernance)
         self._table_unlocked = unlocked
         self._unlock_block = genesis_block_if_you_need_it()
+        self._emit(EventTableUnlocked(unlocked_by=caller, block_ts=self._unlock_block))
+
+    def transfer(self, from_addr: str, to_addr: str, amount: int, sender: str) -> None:
+        from_addr = _normalize_addr(from_addr)
+        to_addr = _normalize_addr(to_addr)
+        sender = _normalize_addr(sender)
+        _require(to_addr != "0x" + "0" * 40, TransferToZero)
+        _require(amount > 0, ZeroAmount)
+        bal = self._balances.get(from_addr, 0)
+        _require(bal >= amount, ExceedsBalance)
+        if sender != from_addr:
+            allow = self._allowances.get((from_addr, sender), 0)
+            _require(allow >= amount, ExceedsAllowance)
+            self._allowances[(from_addr, sender)] = allow - amount
+
+        fee = 0
+        if self._transfer_fee_basis > 0 and self._fee_recipient != "0x" + "0" * 40:
+            fee = (amount * self._transfer_fee_basis) // KON_BASIS_POINTS
+            if fee > 0:
+                amount -= fee
+        self._balances[from_addr] = bal - amount - fee
+        self._balances[to_addr] = self._balances.get(to_addr, 0) + amount
+        if fee > 0:
+            self._balances[self._fee_recipient] = self._balances.get(self._fee_recipient, 0) + fee
+        self._emit(EventTransfer(from_addr=from_addr, to_addr=to_addr, amount=amount))
+
+    def approve(self, owner: str, spender: str, amount: int) -> None:
+        owner = _normalize_addr(owner)
+        spender = _normalize_addr(spender)
+        _require(owner != "0x" + "0" * 40, ZeroAddress)
+        _require(spender != "0x" + "0" * 40, ZeroAddress)
+        self._allowances[(owner, spender)] = amount
+
+    def set_transfer_fee(self, basis: int, caller: str) -> None:
+        caller = _normalize_addr(caller)
+        _require(caller == _normalize_addr(GOVERNANCE_ROUND), NotGovernance)
+        _require(basis <= KON_MAX_FEE_BASIS, FeeBasisTooHigh)
+        self._transfer_fee_basis = basis
