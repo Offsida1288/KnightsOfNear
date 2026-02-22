@@ -796,3 +796,41 @@ def get_kok_rarity_counts(engine: KnightsOfNearEngine) -> Dict[str, int]:
 
 def get_kok_holders_list(engine: KnightsOfNearEngine) -> List[Dict[str, Any]]:
     out = []
+    for token_id in range(KOK_COLLECTION_SIZE):
+        owner = engine._kok_owners.get(token_id)
+        if owner is None:
+            continue
+        meta = KOK_METADATA[token_id]
+        out.append({
+            "token_id": token_id,
+            "owner": owner,
+            "name": meta["name"],
+            "rarity": meta["rarity"].name if isinstance(meta["rarity"], KOKRarity) else meta["rarity"],
+        })
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Simulation: run a sequence of ops (EVM-safe)
+# ---------------------------------------------------------------------------
+
+
+def run_simulation(
+    engine: KnightsOfNearEngine,
+    ops: List[Dict[str, Any]],
+    block_start: int = 0,
+) -> List[Any]:
+    events = []
+    block = block_start
+    for op in ops:
+        kind = op.get("op")
+        if kind == "transfer":
+            engine.transfer(
+                op["from"],
+                op["to"],
+                int(op["amount"]),
+                op.get("sender", op["from"]),
+            )
+        elif kind == "claim_seat":
+            engine.claim_seat(
+                int(op["seat_id"]),
