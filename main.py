@@ -682,3 +682,41 @@ def deploy_fresh(chain_id: int = 1) -> KnightsOfNearEngine:
 class EngineSnapshot:
     balances: Dict[str, int]
     allowances: Dict[Tuple[str, str], int]
+    total_supply: int
+    seats: Dict[int, Dict[str, Any]]
+    seat_by_knight: Dict[str, int]
+    kok_owners: Dict[int, str]
+    kok_minted: Dict[int, bool]
+    table_unlocked: bool
+    unlock_block: int
+    transfer_fee_basis: int
+    fee_recipient: str
+
+
+def snapshot_engine(engine: KnightsOfNearEngine) -> EngineSnapshot:
+    seats_ser = {}
+    for sid, s in engine._seats.items():
+        seats_ser[sid] = {
+            "seat_id": s.seat_id,
+            "occupant": s.occupant,
+            "stake_amount": s.stake_amount,
+            "claimed_at_block": s.claimed_at_block,
+            "status": s.status.name,
+        }
+    return EngineSnapshot(
+        balances=dict(engine._balances),
+        allowances=dict(engine._allowances),
+        total_supply=engine._total_supply,
+        seats=seats_ser,
+        seat_by_knight=dict(engine._seat_by_knight),
+        kok_owners=dict(engine._kok_owners),
+        kok_minted=dict(engine._kok_minted),
+        table_unlocked=engine._table_unlocked,
+        unlock_block=engine._unlock_block,
+        transfer_fee_basis=engine._transfer_fee_basis,
+        fee_recipient=engine._fee_recipient,
+    )
+
+
+def restore_engine(engine: KnightsOfNearEngine, snap: EngineSnapshot) -> None:
+    engine._balances = dict(snap.balances)
