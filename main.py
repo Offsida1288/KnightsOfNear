@@ -74,3 +74,41 @@ class NotAKnight(KnightsOfNearError):
 
 
 class InsufficientStake(KnightsOfNearError):
+    pass
+
+
+class RoundTableFull(KnightsOfNearError):
+    pass
+
+
+class ZeroAddress(KnightsOfNearError):
+    pass
+
+
+class ZeroAmount(KnightsOfNearError):
+    pass
+
+
+class ExceedsBalance(KnightsOfNearError):
+    pass
+
+
+class ExceedsAllowance(KnightsOfNearError):
+    pass
+
+
+class FeeBasisTooHigh(KnightsOfNearError):
+    pass
+
+
+class KOKIndexOutOfRange(KnightsOfNearError):
+    pass
+
+
+class KOKAlreadyMinted(KnightsOfNearError):
+    pass
+
+
+class NotKOKOwner(KnightsOfNearError):
+    pass
+
