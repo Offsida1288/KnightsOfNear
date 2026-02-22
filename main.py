@@ -188,3 +188,41 @@ class EventKOKMinted:
 
 @dataclass
 class EventTableUnlocked:
+    unlocked_by: str
+    block_ts: int
+
+
+# ---------------------------------------------------------------------------
+# Round table seat
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class RoundTableSeat:
+    seat_id: int
+    occupant: str
+    stake_amount: int
+    claimed_at_block: int
+    status: SeatStatus
+
+
+# ---------------------------------------------------------------------------
+# KOK NFT metadata (16 high-profile knights)
+# ---------------------------------------------------------------------------
+
+KOK_METADATA: List[Dict[str, Any]] = [
+    {
+        "token_id": 0,
+        "name": "Arthur of Near",
+        "description": "Sovereign of the Round Table. One blade to bind them.",
+        "rarity": KOKRarity.LEGENDARY,
+        "attributes": [{"trait_type": "Title", "value": "High King"}, {"trait_type": "Power", "value": 98}],
+        "image_hash": "0x" + hashlib.sha256(b"KOK_Arthur_0").hexdigest()[:64],
+    },
+    {
+        "token_id": 1,
+        "name": "Merlin the Seer",
+        "description": "Oracle of NEAR. Sees across chains.",
+        "rarity": KOKRarity.LEGENDARY,
+        "attributes": [{"trait_type": "Title", "value": "Prophet"}, {"trait_type": "Power", "value": 95}],
+        "image_hash": "0x" + hashlib.sha256(b"KOK_Merlin_1").hexdigest()[:64],
