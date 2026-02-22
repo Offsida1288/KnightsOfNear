@@ -454,3 +454,41 @@ class KnightsOfNearEngine:
         _require(caller == _normalize_addr(GOVERNANCE_ROUND), NotGovernance)
         _require(basis <= KON_MAX_FEE_BASIS, FeeBasisTooHigh)
         self._transfer_fee_basis = basis
+
+    def set_fee_recipient(self, recipient: str, caller: str) -> None:
+        caller = _normalize_addr(caller)
+        _require(caller == _normalize_addr(GOVERNANCE_ROUND), NotGovernance)
+        _require(recipient != "0x" + "0" * 40, ZeroAddress)
+        self._fee_recipient = _normalize_addr(recipient)
+
+    def claim_seat(self, seat_id: int, knight: str, stake_amount: int, block_num: int) -> None:
+        _require(0 <= seat_id < ROUND_TABLE_SEATS, InvalidSeatId)
+        knight = _normalize_addr(knight)
+        _require(self._table_unlocked, TableNotUnlocked)
+        seat = self._seats[seat_id]
+        _require(seat.status == SeatStatus.VACANT, SeatAlreadyClaimed)
+        _require(stake_amount >= KON_MIN_STAKE_FOR_SEAT, InsufficientStake)
+        bal = self._balances.get(knight, 0)
+        _require(bal >= stake_amount, ExceedsBalance)
+
+        self._balances[knight] = bal - stake_amount
+        self._seats[seat_id] = RoundTableSeat(
+            seat_id=seat_id,
+            occupant=knight,
+            stake_amount=stake_amount,
+            claimed_at_block=block_num,
+            status=SeatStatus.CLAIMED,
+        )
+        self._seat_by_knight[knight] = seat_id
+        self._emit(EventSeatClaimed(seat_id=seat_id, knight=knight, stake_amount=stake_amount))
+
+    def release_seat(self, seat_id: int, caller: str, block_num: int) -> None:
+        _require(0 <= seat_id < ROUND_TABLE_SEATS, InvalidSeatId)
+        caller = _normalize_addr(caller)
+        seat = self._seats[seat_id]
+        _require(seat.occupant == caller, NotAKnight)
+        _require(seat.status == SeatStatus.CLAIMED, TableGuardDenied)
+
+        amount = seat.stake_amount
+        self._seats[seat_id] = RoundTableSeat(
+            seat_id=seat_id,
