@@ -112,3 +112,41 @@ class KOKAlreadyMinted(KnightsOfNearError):
 class NotKOKOwner(KnightsOfNearError):
     pass
 
+
+class NotGovernance(KnightsOfNearError):
+    pass
+
+
+class NotRegistrar(KnightsOfNearError):
+    pass
+
+
+class TableNotUnlocked(KnightsOfNearError):
+    pass
+
+
+class ClaimBatchTooLarge(KnightsOfNearError):
+    pass
+
+
+class InvalidSeatId(KnightsOfNearError):
+    pass
+
+
+class TransferToZero(KnightsOfNearError):
+    pass
+
+
+class MintExceedsCap(KnightsOfNearError):
+    pass
+
+
+# ---------------------------------------------------------------------------
+# Enums
+# ---------------------------------------------------------------------------
+
+
+class SeatStatus(Enum):
+    VACANT = 0
+    CLAIMED = 1
+    FROZEN = 2
