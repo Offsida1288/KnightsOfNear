@@ -36,3 +36,41 @@ BURN_ADDRESS = "0x000000000000000000000000000000000000dEaD"
 
 KON_DECIMALS = 18
 KON_SCALE = 10**18
+KON_INITIAL_SUPPLY = 1_000_000_000 * KON_SCALE
+KON_MAX_SUPPLY = 2_000_000_000 * KON_SCALE
+ROUND_TABLE_SEATS = 150
+KOK_COLLECTION_SIZE = 16
+KON_BASIS_POINTS = 10_000
+KON_MAX_FEE_BASIS = 250
+KON_MIN_STAKE_FOR_SEAT = 10_000 * KON_SCALE
+TABLE_ENTRY_FEE_WEI = 100_000_000_000_000
+MAX_CLAIM_PER_TX = 50
+DOMAIN_SEPARATOR_SALT = "0x8f4a2c6e1b9d0f3a7c5e8b2d6f1a4c9e0b3d7f2"
+KOK_NAMESPACE = hashlib.sha256(b"KnightsOfNear.KOK_COLLECTION").hexdigest()
+ROUND_TABLE_NAMESPACE = hashlib.sha256(b"KnightsOfNear.ROUND_TABLE_ACCESS").hexdigest()
+EIP712_VERSION = "1"
+
+# ---------------------------------------------------------------------------
+# Custom errors (unique to this contract)
+# ---------------------------------------------------------------------------
+
+
+class KnightsOfNearError(Exception):
+    """Base for KnightsOfNear engine."""
+
+    pass
+
+
+class TableGuardDenied(KnightsOfNearError):
+    pass
+
+
+class SeatAlreadyClaimed(KnightsOfNearError):
+    pass
+
+
+class NotAKnight(KnightsOfNearError):
+    pass
+
+
+class InsufficientStake(KnightsOfNearError):
