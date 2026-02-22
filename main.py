@@ -150,3 +150,41 @@ class SeatStatus(Enum):
     VACANT = 0
     CLAIMED = 1
     FROZEN = 2
+
+
+class KOKRarity(Enum):
+    COMMON = 0
+    UNCOMMON = 1
+    RARE = 2
+    EPIC = 3
+    LEGENDARY = 4
+
+
+# ---------------------------------------------------------------------------
+# Events (log-style structures)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class EventTransfer:
+    from_addr: str
+    to_addr: str
+    amount: int
+
+
+@dataclass
+class EventSeatClaimed:
+    seat_id: int
+    knight: str
+    stake_amount: int
+
+
+@dataclass
+class EventKOKMinted:
+    token_id: int
+    to_addr: str
+    rarity: KOKRarity
+
+
+@dataclass
+class EventTableUnlocked:
