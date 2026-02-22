@@ -492,3 +492,41 @@ class KnightsOfNearEngine:
         amount = seat.stake_amount
         self._seats[seat_id] = RoundTableSeat(
             seat_id=seat_id,
+            occupant="",
+            stake_amount=0,
+            claimed_at_block=0,
+            status=SeatStatus.VACANT,
+        )
+        del self._seat_by_knight[caller]
+        self._balances[caller] = self._balances.get(caller, 0) + amount
+
+    def has_round_table_access(self, addr: str) -> bool:
+        return _normalize_addr(addr) in self._seat_by_knight
+
+    def get_seat_for_knight(self, addr: str) -> Optional[int]:
+        return self._seat_by_knight.get(_normalize_addr(addr))
+
+    def mint_kok(self, token_id: int, to_addr: str, caller: str) -> None:
+        _require(0 <= token_id < KOK_COLLECTION_SIZE, KOKIndexOutOfRange)
+        _require(not self._kok_minted[token_id], KOKAlreadyMinted)
+        caller = _normalize_addr(caller)
+        to_addr = _normalize_addr(to_addr)
+        _require(caller == _normalize_addr(SEAT_REGISTRAR), NotRegistrar)
+        _require(to_addr != "0x" + "0" * 40, ZeroAddress)
+
+        self._kok_minted[token_id] = True
+        self._kok_owners[token_id] = to_addr
+        meta = KOK_METADATA[token_id]
+        self._emit(EventKOKMinted(token_id=token_id, to_addr=to_addr, rarity=meta["rarity"]))
+
+    def transfer_kok(self, token_id: int, from_addr: str, to_addr: str, sender: str) -> None:
+        _require(0 <= token_id < KOK_COLLECTION_SIZE, KOKIndexOutOfRange)
+        from_addr = _normalize_addr(from_addr)
+        to_addr = _normalize_addr(to_addr)
+        sender = _normalize_addr(sender)
+        _require(self._kok_owners.get(token_id) == from_addr, NotKOKOwner)
+        _require(sender == from_addr, NotKOKOwner)
+        _require(to_addr != "0x" + "0" * 40, ZeroAddress)
+        self._kok_owners[token_id] = to_addr
+
+    def balance_of(self, addr: str) -> int:
