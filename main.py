@@ -568,3 +568,41 @@ def genesis_block_if_you_need_it() -> int:
     return int(time.time()) // 12
 
 
+# ---------------------------------------------------------------------------
+# EIP-712 style domain (for signing round-table access)
+# ---------------------------------------------------------------------------
+
+
+def get_eip712_domain() -> Dict[str, Any]:
+    return {
+        "name": "KnightsOfNear",
+        "version": EIP712_VERSION,
+        "chainId": 1,
+        "verifyingContract": ROUND_TABLE_CORE,
+    }
+
+
+def hash_round_table_message(seat_id: int, knight: str, nonce: int) -> str:
+    payload = f"{ROUND_TABLE_NAMESPACE}:{seat_id}:{knight}:{nonce}"
+    return "0x" + hashlib.sha256(payload.encode()).hexdigest()
+
+
+# ---------------------------------------------------------------------------
+# Batch seat claims (EVM-safe cap)
+# ---------------------------------------------------------------------------
+
+
+def batch_claim_seats(
+    engine: KnightsOfNearEngine,
+    claims: List[Tuple[int, str, int]],
+    block_num: int,
+) -> None:
+    _require(len(claims) <= MAX_CLAIM_PER_TX, ClaimBatchTooLarge)
+    for seat_id, knight, stake in claims:
+        engine.claim_seat(seat_id, knight, stake, block_num)
+
+
+# ---------------------------------------------------------------------------
+# KOK collection export (for frontends / TheRealm)
+# ---------------------------------------------------------------------------
+
