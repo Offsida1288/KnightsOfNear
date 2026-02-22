@@ -644,3 +644,41 @@ def get_round_table_summary(engine: KnightsOfNearEngine) -> Dict[str, Any]:
     claimed = engine.seats_claimed_count()
     return {
         "total_seats": ROUND_TABLE_SEATS,
+        "claimed_seats": claimed,
+        "vacant_seats": ROUND_TABLE_SEATS - claimed,
+        "table_unlocked": engine._table_unlocked,
+        "min_stake_wei": KON_MIN_STAKE_FOR_SEAT,
+    }
+
+
+def get_kon_token_info() -> Dict[str, Any]:
+    return {
+        "name": "KnightsOfNear",
+        "symbol": "KON",
+        "decimals": KON_DECIMALS,
+        "initial_supply": KON_INITIAL_SUPPLY,
+        "max_supply": KON_MAX_SUPPLY,
+        "scale": KON_SCALE,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Simulated deployment (for testing)
+# ---------------------------------------------------------------------------
+
+
+def deploy_fresh(chain_id: int = 1) -> KnightsOfNearEngine:
+    engine = KnightsOfNearEngine(genesis_block=genesis_block_if_you_need_it())
+    engine.set_table_unlocked(True, GOVERNANCE_ROUND)
+    return engine
+
+
+# ---------------------------------------------------------------------------
+# Snapshot and restore (for testing and replay)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class EngineSnapshot:
+    balances: Dict[str, int]
+    allowances: Dict[Tuple[str, str], int]
