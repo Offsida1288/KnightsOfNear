@@ -530,3 +530,41 @@ class KnightsOfNearEngine:
         self._kok_owners[token_id] = to_addr
 
     def balance_of(self, addr: str) -> int:
+        return self._balances.get(_normalize_addr(addr), 0)
+
+    def allowance(self, owner: str, spender: str) -> int:
+        return self._allowances.get((_normalize_addr(owner), _normalize_addr(spender)), 0)
+
+    def total_supply(self) -> int:
+        return self._total_supply
+
+    def get_seat(self, seat_id: int) -> Optional[RoundTableSeat]:
+        if 0 <= seat_id < ROUND_TABLE_SEATS:
+            return self._seats[seat_id]
+        return None
+
+    def get_kok_owner(self, token_id: int) -> Optional[str]:
+        return self._kok_owners.get(token_id)
+
+    def get_kok_metadata(self, token_id: int) -> Optional[Dict[str, Any]]:
+        if 0 <= token_id < KOK_COLLECTION_SIZE:
+            return KOK_METADATA[token_id].copy()
+        return None
+
+    def get_events(self) -> List[Any]:
+        return self._events.copy()
+
+    def clear_events(self) -> None:
+        self._events.clear()
+
+    def seats_claimed_count(self) -> int:
+        return sum(1 for s in self._seats.values() if s.status == SeatStatus.CLAIMED)
+
+    def kok_minted_count(self) -> int:
+        return sum(1 for v in self._kok_minted.values() if v)
+
+
+def genesis_block_if_you_need_it() -> int:
+    return int(time.time()) // 12
+
+
