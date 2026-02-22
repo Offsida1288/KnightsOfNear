@@ -340,3 +340,41 @@ KOK_METADATA: List[Dict[str, Any]] = [
         "image_hash": "0x" + hashlib.sha256(b"KOK_Mordred_15").hexdigest()[:64],
     },
 ]
+
+
+def _normalize_addr(addr: str) -> str:
+    a = addr.strip()
+    if a.startswith("0x"):
+        a = a[2:]
+    return "0x" + a.lower().zfill(40)[-40:]
+
+
+def _require(cond: bool, exc: type[KnightsOfNearError]) -> None:
+    if not cond:
+        raise exc()
+
+
+# ---------------------------------------------------------------------------
+# KnightsOfNear engine
+# ---------------------------------------------------------------------------
+
+
+class KnightsOfNearEngine:
+    """
+    Utility meme token and Round Table access. KOK NFT collection of 16 knights.
+    EVM-safe logic: bounds checks, no overflow assumptions, standard access.
+    """
+
+    def __init__(self, genesis_block: int = 0):
+        self.genesis_block = genesis_block
+        self._balances: Dict[str, int] = {}
+        self._allowances: Dict[Tuple[str, str], int] = {}
+        self._total_supply = 0
+        self._seats: Dict[int, RoundTableSeat] = {}
+        self._seat_by_knight: Dict[str, int] = {}
+        self._kok_owners: Dict[int, str] = {}
+        self._kok_minted: Dict[int, bool] = {i: False for i in range(KOK_COLLECTION_SIZE)}
+        self._table_unlocked = False
+        self._unlock_block = 0
+        self._transfer_fee_basis = 50
+        self._fee_recipient = _normalize_addr(DEFAULT_FEE_RECIPIENT)
