@@ -758,3 +758,41 @@ def get_kon_holding_report(engine: KnightsOfNearEngine, addrs: List[str]) -> Lis
     return out
 
 
+# ---------------------------------------------------------------------------
+# Round table leaderboard (by stake)
+# ---------------------------------------------------------------------------
+
+
+def get_round_table_leaderboard(engine: KnightsOfNearEngine) -> List[Dict[str, Any]]:
+    entries = []
+    for sid, seat in engine._seats.items():
+        if seat.status != SeatStatus.CLAIMED:
+            continue
+        entries.append({
+            "seat_id": sid,
+            "knight": seat.occupant,
+            "stake_amount": seat.stake_amount,
+            "claimed_at_block": seat.claimed_at_block,
+        })
+    entries.sort(key=lambda x: (-x["stake_amount"], x["seat_id"]))
+    return entries
+
+
+# ---------------------------------------------------------------------------
+# KOK rarity distribution
+# ---------------------------------------------------------------------------
+
+
+def get_kok_rarity_counts(engine: KnightsOfNearEngine) -> Dict[str, int]:
+    counts = {r.name: 0 for r in KOKRarity}
+    for token_id in range(KOK_COLLECTION_SIZE):
+        if not engine._kok_minted.get(token_id):
+            continue
+        r = KOK_METADATA[token_id]["rarity"]
+        name = r.name if isinstance(r, KOKRarity) else r
+        counts[name] = counts.get(name, 0) + 1
+    return counts
+
+
+def get_kok_holders_list(engine: KnightsOfNearEngine) -> List[Dict[str, Any]]:
+    out = []
