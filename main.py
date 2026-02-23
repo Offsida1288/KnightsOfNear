@@ -1062,3 +1062,41 @@ def get_vacant_seat_ids(engine: KnightsOfNearEngine) -> List[int]:
 
 def get_claimed_seat_ids(engine: KnightsOfNearEngine) -> List[int]:
     return [sid for sid in range(ROUND_TABLE_SEATS) if engine._seats[sid].status == SeatStatus.CLAIMED]
+
+
+# ---------------------------------------------------------------------------
+# KOK by rarity (for gallery)
+# ---------------------------------------------------------------------------
+
+
+def get_kok_ids_by_rarity(rarity: KOKRarity) -> List[int]:
+    return [m["token_id"] for m in KOK_METADATA if m["rarity"] == rarity]
+
+
+def get_kok_metadata_batch(token_ids: List[int]) -> List[Dict[str, Any]]:
+    out = []
+    for tid in token_ids:
+        m = get_kok_metadata_safe(tid)
+        if m:
+            out.append(m)
+    return out
+
+
+def get_kok_metadata_safe(token_id: int) -> Optional[Dict[str, Any]]:
+    if not validate_kok_id(token_id):
+        return None
+    m = KOK_METADATA[token_id].copy()
+    m["rarity"] = m["rarity"].name if isinstance(m["rarity"], KOKRarity) else m["rarity"]
+    return m
+
+
+# ---------------------------------------------------------------------------
+# Approve and transfer from (ERC20-style)
+# ---------------------------------------------------------------------------
+
+
+def transfer_from(engine: KnightsOfNearEngine, caller: str, from_addr: str, to_addr: str, amount: int) -> None:
+    engine.transfer(from_addr, to_addr, amount, caller)
+
+
+# ---------------------------------------------------------------------------
