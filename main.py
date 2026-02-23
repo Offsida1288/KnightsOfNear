@@ -986,3 +986,41 @@ def get_kok_collection_stats() -> Dict[str, Any]:
         by_rarity[name] = by_rarity.get(name, 0) + 1
     return {
         "total_nfts": KOK_COLLECTION_SIZE,
+        "by_rarity": by_rarity,
+        "legendary": by_rarity.get(KOKRarity.LEGENDARY.name, 0),
+        "epic": by_rarity.get(KOKRarity.EPIC.name, 0),
+        "rare": by_rarity.get(KOKRarity.RARE.name, 0),
+        "uncommon": by_rarity.get(KOKRarity.UNCOMMON.name, 0),
+        "common": by_rarity.get(KOKRarity.COMMON.name, 0),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Round table eligibility check
+# ---------------------------------------------------------------------------
+
+
+def can_claim_seat(engine: KnightsOfNearEngine, knight: str, stake_amount: int) -> Tuple[bool, Optional[str]]:
+    knight = _normalize_addr(knight)
+    if not engine._table_unlocked:
+        return False, "Table not unlocked"
+    if knight in engine._seat_by_knight:
+        return False, "Already has a seat"
+    if stake_amount < KON_MIN_STAKE_FOR_SEAT:
+        return False, "Insufficient stake"
+    if engine.balance_of(knight) < stake_amount:
+        return False, "Balance too low"
+    vacant = ROUND_TABLE_SEATS - engine.seats_claimed_count()
+    if vacant <= 0:
+        return False, "No vacant seats"
+    return True, None
+
+
+# ---------------------------------------------------------------------------
+# Seat lock periods (min blocks before release)
+# ---------------------------------------------------------------------------
+
+MIN_SEAT_LOCK_BLOCKS = 7200  # ~1 day at 12s/block
+
+
+def can_release_seat_at_block(engine: KnightsOfNearEngine, seat_id: int, current_block: int) -> Tuple[bool, Optional[str]]:
