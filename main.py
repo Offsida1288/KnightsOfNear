@@ -1100,3 +1100,41 @@ def transfer_from(engine: KnightsOfNearEngine, caller: str, from_addr: str, to_a
 
 
 # ---------------------------------------------------------------------------
+# Bulk view for dashboard
+# ---------------------------------------------------------------------------
+
+
+def get_full_dashboard(engine: KnightsOfNearEngine) -> Dict[str, Any]:
+    return {
+        "token": get_kon_token_info(),
+        "round_table": get_round_table_summary(engine),
+        "leaderboard": get_round_table_leaderboard(engine)[:20],
+        "kok_stats": get_kok_collection_stats(),
+        "kok_holders": get_kok_holders_list(engine),
+        "fee_recipient_balance": get_fee_recipient_balance(engine),
+        "vacant_seats": get_vacant_seat_ids(engine),
+        "gate_keepers": get_all_gate_keepers(),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Hex and address uniqueness checks (for deployment)
+# ---------------------------------------------------------------------------
+
+_ALL_ADDRESSES = [
+    GOVERNANCE_ROUND,
+    TABLE_TREASURY,
+    SEAT_REGISTRAR,
+    KOK_VAULT,
+    BRIDGE_RELAY,
+    ROUND_TABLE_CORE,
+    KON_TOKEN_HUB,
+    MERLIN_GATE,
+    LANCELOT_GATE,
+    GAWAIN_GATE,
+    DEFAULT_FEE_RECIPIENT,
+]
+
+
+def all_addresses_unique() -> bool:
+    seen = set()
