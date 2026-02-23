@@ -1290,3 +1290,41 @@ def kok_rarity_weight(r: KOKRarity) -> int:
 # ---------------------------------------------------------------------------
 # Seat ID to knight lookup
 # ---------------------------------------------------------------------------
+
+
+def get_knight_at_seat(engine: KnightsOfNearEngine, seat_id: int) -> Optional[str]:
+    if not validate_seat_id(seat_id):
+        return None
+    seat = engine._seats.get(seat_id)
+    if not seat or seat.status != SeatStatus.CLAIMED:
+        return None
+    return seat.occupant
+
+
+def get_stake_at_seat(engine: KnightsOfNearEngine, seat_id: int) -> int:
+    seat = engine.get_seat(seat_id)
+    if not seat or seat.status != SeatStatus.CLAIMED:
+        return 0
+    return seat.stake_amount
+
+
+# ---------------------------------------------------------------------------
+# Round table access token check (utility meme token gate)
+# ---------------------------------------------------------------------------
+
+
+def has_round_table_access_token(engine: KnightsOfNearEngine, addr: str) -> bool:
+    return engine.has_round_table_access(_normalize_addr(addr))
+
+
+def list_knights_with_access(engine: KnightsOfNearEngine) -> List[str]:
+    return list(engine._seat_by_knight.keys())
+
+
+# ---------------------------------------------------------------------------
+# NEAR round table branding (for TheRealm)
+# ---------------------------------------------------------------------------
+
+REALM_NAME = "TheRealm"
+ROUND_TABLE_TAGLINE = "Where NEAR meets the Round Table."
+KOK_COLLECTION_NAME = "Knights of KON (KOK)"
