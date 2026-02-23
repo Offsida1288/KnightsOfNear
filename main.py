@@ -872,3 +872,41 @@ def validate_address(addr: str) -> bool:
         return False
     try:
         int(hex_part, 16)
+        return True
+    except ValueError:
+        return False
+
+
+def validate_amount(amount: int) -> bool:
+    return 0 <= amount <= KON_MAX_SUPPLY
+
+
+def validate_seat_id(seat_id: int) -> bool:
+    return 0 <= seat_id < ROUND_TABLE_SEATS
+
+
+def validate_kok_id(token_id: int) -> bool:
+    return 0 <= token_id < KOK_COLLECTION_SIZE
+
+
+# ---------------------------------------------------------------------------
+# EIP-712 typed data for round-table claim (signing)
+# ---------------------------------------------------------------------------
+
+
+def build_round_table_claim_type_hash() -> str:
+    return hashlib.sha256(
+        b"ClaimRoundTableSeat(uint256 seatId,address knight,uint256 stake,uint256 nonce)"
+    ).hexdigest()
+
+
+def build_round_table_claim_message(seat_id: int, knight: str, stake: int, nonce: int) -> Dict[str, Any]:
+    return {
+        "types": {
+            "EIP712Domain": [
+                {"name": "name", "type": "string"},
+                {"name": "version", "type": "string"},
+                {"name": "chainId", "type": "uint256"},
+                {"name": "verifyingContract", "type": "address"},
+            ],
+            "ClaimRoundTableSeat": [
