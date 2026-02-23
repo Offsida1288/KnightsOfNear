@@ -1138,3 +1138,41 @@ _ALL_ADDRESSES = [
 
 def all_addresses_unique() -> bool:
     seen = set()
+    for a in _ALL_ADDRESSES:
+        n = _normalize_addr(a)
+        if n in seen:
+            return False
+        seen.add(n)
+    return True
+
+
+def get_all_deployed_addresses() -> List[str]:
+    return [_normalize_addr(a) for a in _ALL_ADDRESSES]
+
+
+# ---------------------------------------------------------------------------
+# Sample simulation script (no side effects; for testing)
+# ---------------------------------------------------------------------------
+
+SAMPLE_KNIGHT_A = "0xf1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0"
+SAMPLE_KNIGHT_B = "0xa0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9"
+SAMPLE_KNIGHT_C = "0x5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5"
+
+
+def run_sample_simulation() -> KnightsOfNearEngine:
+    eng = deploy_fresh(chain_id=1)
+    eng.transfer(GOVERNANCE_ROUND, SAMPLE_KNIGHT_A, 500_000 * KON_SCALE, GOVERNANCE_ROUND)
+    eng.transfer(GOVERNANCE_ROUND, SAMPLE_KNIGHT_B, 300_000 * KON_SCALE, GOVERNANCE_ROUND)
+    eng.transfer(GOVERNANCE_ROUND, SAMPLE_KNIGHT_C, 200_000 * KON_SCALE, GOVERNANCE_ROUND)
+    eng.claim_seat(0, SAMPLE_KNIGHT_A, KON_MIN_STAKE_FOR_SEAT, 100)
+    eng.claim_seat(1, SAMPLE_KNIGHT_B, KON_MIN_STAKE_FOR_SEAT, 101)
+    eng.mint_kok(0, SAMPLE_KNIGHT_A, SEAT_REGISTRAR)
+    eng.mint_kok(1, SAMPLE_KNIGHT_B, SEAT_REGISTRAR)
+    return eng
+
+
+# ---------------------------------------------------------------------------
+# Round table entry fee (optional gate)
+# ---------------------------------------------------------------------------
+
+TABLE_ENTRY_FEE_ENABLED = False
