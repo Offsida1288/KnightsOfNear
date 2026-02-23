@@ -834,3 +834,41 @@ def run_simulation(
         elif kind == "claim_seat":
             engine.claim_seat(
                 int(op["seat_id"]),
+                op["knight"],
+                int(op["stake_amount"]),
+                block,
+            )
+        elif kind == "release_seat":
+            engine.release_seat(int(op["seat_id"]), op["caller"], block)
+        elif kind == "mint_kok":
+            engine.mint_kok(int(op["token_id"]), op["to"], op["caller"])
+        elif kind == "transfer_kok":
+            engine.transfer_kok(
+                int(op["token_id"]),
+                op["from"],
+                op["to"],
+                op["sender"],
+            )
+        elif kind == "advance_block":
+            block += int(op.get("delta", 1))
+            continue
+        events.extend(engine.get_events())
+        engine.clear_events()
+        block += 1
+    return events
+
+
+# ---------------------------------------------------------------------------
+# Validation helpers (EVM mainnet safety)
+# ---------------------------------------------------------------------------
+
+
+def validate_address(addr: str) -> bool:
+    a = addr.strip()
+    if not a.startswith("0x"):
+        return False
+    hex_part = a[2:]
+    if len(hex_part) != 40:
+        return False
+    try:
+        int(hex_part, 16)
