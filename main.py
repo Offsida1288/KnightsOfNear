@@ -948,3 +948,41 @@ def export_round_table_csv(engine: KnightsOfNearEngine) -> str:
     for e in get_round_table_leaderboard(engine):
         lines.append(f"{e['seat_id']},{e['knight']},{e['stake_amount']},{e['claimed_at_block']}")
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Gate access (Merlin / Lancelot / Gawain roles)
+# ---------------------------------------------------------------------------
+
+GATE_ROLES = {
+    "merlin": MERLIN_GATE,
+    "lancelot": LANCELOT_GATE,
+    "gawain": GAWAIN_GATE,
+}
+
+
+def is_gate_keeper(addr: str, role: str) -> bool:
+    return _normalize_addr(addr) == _normalize_addr(GATE_ROLES.get(role, ""))
+
+
+def get_all_gate_keepers() -> List[Dict[str, str]]:
+    return [
+        {"role": "merlin", "address": MERLIN_GATE},
+        {"role": "lancelot", "address": LANCELOT_GATE},
+        {"role": "gawain", "address": GAWAIN_GATE},
+    ]
+
+
+# ---------------------------------------------------------------------------
+# KOK collection stats for TheRealm UI
+# ---------------------------------------------------------------------------
+
+
+def get_kok_collection_stats() -> Dict[str, Any]:
+    rarities = [m["rarity"] for m in KOK_METADATA]
+    by_rarity: Dict[str, int] = {}
+    for r in rarities:
+        name = r.name if isinstance(r, KOKRarity) else str(r)
+        by_rarity[name] = by_rarity.get(name, 0) + 1
+    return {
+        "total_nfts": KOK_COLLECTION_SIZE,
