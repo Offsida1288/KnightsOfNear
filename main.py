@@ -1176,3 +1176,41 @@ def run_sample_simulation() -> KnightsOfNearEngine:
 # ---------------------------------------------------------------------------
 
 TABLE_ENTRY_FEE_ENABLED = False
+
+
+def set_table_entry_fee_enabled(enabled: bool) -> None:
+    global TABLE_ENTRY_FEE_ENABLED
+    TABLE_ENTRY_FEE_ENABLED = enabled
+
+
+def get_table_entry_fee_wei() -> int:
+    return TABLE_ENTRY_FEE_WEI if TABLE_ENTRY_FEE_ENABLED else 0
+
+
+# ---------------------------------------------------------------------------
+# KOK transfer approval (future extension)
+# ---------------------------------------------------------------------------
+
+
+def kok_approved_for(engine: KnightsOfNearEngine, token_id: int, operator: str) -> bool:
+    owner = engine.get_kok_owner(token_id)
+    if not owner:
+        return False
+    return _normalize_addr(operator) == _normalize_addr(owner)
+
+
+# ---------------------------------------------------------------------------
+# Constants export for frontend
+# ---------------------------------------------------------------------------
+
+
+def get_public_constants() -> Dict[str, Any]:
+    return {
+        "KON_DECIMALS": KON_DECIMALS,
+        "KON_SCALE": str(KON_SCALE),
+        "ROUND_TABLE_SEATS": ROUND_TABLE_SEATS,
+        "KOK_COLLECTION_SIZE": KOK_COLLECTION_SIZE,
+        "KON_MIN_STAKE_FOR_SEAT": str(KON_MIN_STAKE_FOR_SEAT),
+        "MAX_CLAIM_PER_TX": MAX_CLAIM_PER_TX,
+        "MIN_SEAT_LOCK_BLOCKS": MIN_SEAT_LOCK_BLOCKS,
+    }
