@@ -1214,3 +1214,41 @@ def get_public_constants() -> Dict[str, Any]:
         "MAX_CLAIM_PER_TX": MAX_CLAIM_PER_TX,
         "MIN_SEAT_LOCK_BLOCKS": MIN_SEAT_LOCK_BLOCKS,
     }
+
+
+# ---------------------------------------------------------------------------
+# Checksums for integrity (unique hex)
+# ---------------------------------------------------------------------------
+
+INTEGRITY_HASH = hashlib.sha256(
+    (DOMAIN_SEPARATOR_SALT + KOK_NAMESPACE + ROUND_TABLE_NAMESPACE).encode()
+).hexdigest()
+DEPLOYMENT_SALT = "0x" + secrets.token_hex(16)
+
+
+# ---------------------------------------------------------------------------
+# Format helpers for UI
+# ---------------------------------------------------------------------------
+
+
+def format_kon_human(amount: int) -> str:
+    if amount >= KON_SCALE:
+        return f"{amount / KON_SCALE:,.2f}"
+    return f"{amount} wei"
+
+
+def format_address_short(addr: str) -> str:
+    a = _normalize_addr(addr)
+    if len(a) < 12:
+        return a
+    return f"{a[:6]}...{a[-4:]}"
+
+
+# ---------------------------------------------------------------------------
+# KOK token URI batch (for marketplace)
+# ---------------------------------------------------------------------------
+
+
+def get_all_kok_token_uris() -> List[Tuple[int, str]]:
+    out = []
+    for tid in range(KOK_COLLECTION_SIZE):
