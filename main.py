@@ -1328,3 +1328,15 @@ def list_knights_with_access(engine: KnightsOfNearEngine) -> List[str]:
 REALM_NAME = "TheRealm"
 ROUND_TABLE_TAGLINE = "Where NEAR meets the Round Table."
 KOK_COLLECTION_NAME = "Knights of KON (KOK)"
+TOKEN_SYMBOL = "KON"
+TOKEN_NAME = "KnightsOfNear"
+
+
+def get_realm_branding() -> Dict[str, str]:
+    return {
+        "realm_name": REALM_NAME,
+        "tagline": ROUND_TABLE_TAGLINE,
+        "kok_name": KOK_COLLECTION_NAME,
+        "token_symbol": TOKEN_SYMBOL,
+        "token_name": TOKEN_NAME,
+    }
