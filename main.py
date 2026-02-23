@@ -1024,3 +1024,41 @@ MIN_SEAT_LOCK_BLOCKS = 7200  # ~1 day at 12s/block
 
 
 def can_release_seat_at_block(engine: KnightsOfNearEngine, seat_id: int, current_block: int) -> Tuple[bool, Optional[str]]:
+    if not validate_seat_id(seat_id):
+        return False, "Invalid seat id"
+    seat = engine._seats.get(seat_id)
+    if not seat or seat.status != SeatStatus.CLAIMED:
+        return False, "Seat not claimed"
+    if current_block < seat.claimed_at_block + MIN_SEAT_LOCK_BLOCKS:
+        return False, "Seat still locked"
+    return True, None
+
+
+# ---------------------------------------------------------------------------
+# Table rewards allocation (stub for treasury)
+# ---------------------------------------------------------------------------
+
+
+def compute_table_rewards_share(engine: KnightsOfNearEngine, total_reward_wei: int) -> List[Tuple[str, int]]:
+    leaderboard = get_round_table_leaderboard(engine)
+    total_stake = sum(e["stake_amount"] for e in leaderboard)
+    if total_stake == 0:
+        return []
+    out = []
+    for e in leaderboard:
+        share = (total_reward_wei * e["stake_amount"]) // total_stake
+        out.append((e["knight"], share))
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Vacant seat IDs (for UI)
+# ---------------------------------------------------------------------------
+
+
+def get_vacant_seat_ids(engine: KnightsOfNearEngine) -> List[int]:
+    return [sid for sid in range(ROUND_TABLE_SEATS) if engine._seats[sid].status == SeatStatus.VACANT]
+
+
+def get_claimed_seat_ids(engine: KnightsOfNearEngine) -> List[int]:
+    return [sid for sid in range(ROUND_TABLE_SEATS) if engine._seats[sid].status == SeatStatus.CLAIMED]
