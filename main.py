@@ -1252,3 +1252,41 @@ def format_address_short(addr: str) -> str:
 def get_all_kok_token_uris() -> List[Tuple[int, str]]:
     out = []
     for tid in range(KOK_COLLECTION_SIZE):
+        uri = get_kok_token_uri(tid)
+        if uri:
+            out.append((tid, uri))
+    return out
+
+
+# ---------------------------------------------------------------------------
+# Main (demo)
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    e = run_sample_simulation()
+    print("KnightsOfNear engine demo")
+    print(json.dumps(get_full_dashboard(e), indent=2, default=str))
+    print("KOK collection:", export_kok_collection_json()[:500], "...")
+    print("Addresses unique:", all_addresses_unique())
+
+
+# ---------------------------------------------------------------------------
+# Rarity weight for random mint (if used off-chain)
+# ---------------------------------------------------------------------------
+
+KOK_RARITY_WEIGHTS = {
+    KOKRarity.LEGENDARY: 1,
+    KOKRarity.EPIC: 3,
+    KOKRarity.RARE: 5,
+    KOKRarity.UNCOMMON: 10,
+    KOKRarity.COMMON: 20,
+}
+
+
+def kok_rarity_weight(r: KOKRarity) -> int:
+    return KOK_RARITY_WEIGHTS.get(r, 0)
+
+
+# ---------------------------------------------------------------------------
+# Seat ID to knight lookup
+# ---------------------------------------------------------------------------
