@@ -910,3 +910,41 @@ def build_round_table_claim_message(seat_id: int, knight: str, stake: int, nonce
                 {"name": "verifyingContract", "type": "address"},
             ],
             "ClaimRoundTableSeat": [
+                {"name": "seatId", "type": "uint256"},
+                {"name": "knight", "type": "address"},
+                {"name": "stake", "type": "uint256"},
+                {"name": "nonce", "type": "uint256"},
+            ],
+        },
+        "domain": get_eip712_domain(),
+        "primaryType": "ClaimRoundTableSeat",
+        "message": {
+            "seatId": seat_id,
+            "knight": knight,
+            "stake": stake,
+            "nonce": nonce,
+        },
+    }
+
+
+# ---------------------------------------------------------------------------
+# Serialization for off-chain indexing
+# ---------------------------------------------------------------------------
+
+
+def engine_state_to_dict(engine: KnightsOfNearEngine) -> Dict[str, Any]:
+    return {
+        "total_supply": engine.total_supply(),
+        "round_table_summary": get_round_table_summary(engine),
+        "kon_info": get_kon_token_info(),
+        "fee_recipient_balance": get_fee_recipient_balance(engine),
+        "kok_minted_count": engine.kok_minted_count(),
+        "kok_rarity_counts": get_kok_rarity_counts(engine),
+    }
+
+
+def export_round_table_csv(engine: KnightsOfNearEngine) -> str:
+    lines = ["seat_id,knight,stake_amount,claimed_at_block"]
+    for e in get_round_table_leaderboard(engine):
+        lines.append(f"{e['seat_id']},{e['knight']},{e['stake_amount']},{e['claimed_at_block']}")
+    return "\n".join(lines)
